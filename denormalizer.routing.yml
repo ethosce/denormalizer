@@ -1,0 +1,7 @@
+denormalizer.create:
+  path: 'admin/config/development/denormalizer'
+  defaults:
+    _form: '\Drupal\denormalizer\Form\DenormalizerCreateForm'
+    _title: 'Confirm Creation'
+  requirements:
+    _permission: 'administer site configuration'
