@@ -58,16 +58,16 @@ class DenormalizerSettingsForm extends ConfigFormBase {
     $form['denormalizer_view_prefix'] = [
       '#title' => $this->t('View prefix'),
       '#type' => 'textfield',
-      '#default_value' => $config->get([
+      /*'#default_value' => $config->get([
         'denormalizer_view_prefix',
         'snowflake_',
-      ]),
+      ]),*/
     ];
 
     $form['denormalizer_db_prefix'] = [
       '#title' => $this->t('Database prefix'),
       '#type' => 'textfield',
-      '#default_value' => $config->get(['denormalizer_db_prefix', 'dw_']),
+      //'#default_value' => $config->get(['denormalizer_db_prefix', 'dw_']),
     ];
 
     $form['denormalizer_cron_enabled'] = [
@@ -115,7 +115,7 @@ class DenormalizerSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->config('charts_highcharts.settings')
+    $this->config('denormalizer.settings')
       // Set the submitted configuration setting
       ->set('denormalizer_sql_mode', $form_state->getValue('denormalizer_sql_mode'))
       ->set('denormalizer_db', $form_state->getValue('denormalizer_db'))
