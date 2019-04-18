@@ -2,7 +2,11 @@
 
 namespace Drupal\denormalizer\Service;
 
-
+/**
+ * Defines a set of functionality to create denormalized table for content.
+ *
+ * @package Drupal\denormalizer\Service
+ */
 interface DenormalizerManagerInterface {
 
     /**
@@ -14,22 +18,38 @@ interface DenormalizerManagerInterface {
     public function getContentEntityTypes();
 
     /**
-     * Retrieves fields associated to a content entity.
+     * Retrieves field schemas.
      *
      * @param string $contentEntityMachineName
      *   The content entity machine name.
+     * @param string $bundle
+     *   The bundle.
      * @return array
-     *   The content entity fields.
+     *   The content entity fields with their schemas.
      */
-    public function getContentEntityFields(string $contentEntityMachineName);
+    public function getContentEntityFieldSchema(string $contentEntityMachineName, string $bundle = NULL);
 
     /**
-     * Retrieves table associated with a particular field name.
+     * Creates denormalized table.
      *
-     * @param string $fieldMachineName
-     *   The field machine name.
-     * @return array
-     *   The field tables.
+     * @param string $tableName
+     *   The name of the denormalized table.
+     * @param array $fieldDefinitions
+     *   Field definitions that include field name and Schema API definition array.
+     * @param string $key
+     *   The active connection defined in $databases in settings.php
+     * @return boolean
+     *   The table creation status.
      */
-    public function getFieldTable(string $fieldMachineName);
+    public function createDenormalizedTable(string $tableName, array $fieldDefinitions, string $key = 'default');
+
+    /**
+     * Creates database if it doesn't exist.
+     *
+     * @param string $key
+     *   The active connection defined in $databases in settings.php
+     * @return boolean
+     *   The database creation status.
+     */
+    public function createDatabase(string $key);
 }
