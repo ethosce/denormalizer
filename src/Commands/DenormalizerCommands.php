@@ -34,9 +34,11 @@ class DenormalizerCommands extends DrushCommands {
      *   Resets tables.
      */
     public function denormalize($options = ['reset' => false]) {
+        $entityId = 'node';
+        $bundle = 'page';
 
-        print_r($this->denormalizerManager->getContentEntityTypes());
+        $schema = $this->denormalizerManager->getContentEntityFieldSchema($entityId, $bundle);
 
-        print_r($this->denormalizerManager->getContentEntityFields('user'));
+        $this->denormalizerManager->createDenormalizedTable($entityId.'_'.$bundle.'_denormalize', $schema);
     }
 }
