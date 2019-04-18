@@ -2,12 +2,26 @@
 
 namespace Drupal\denormalizer\Commands;
 
+use Drupal\denormalizer\Service\DenormalizerManagerInterface;
 use Drush\Commands\DrushCommands;
 
+/**
+ * Class DenormalizerCommands.
+ *
+ * @package Drupal\denormalizer\Commands
+ */
 class DenormalizerCommands extends DrushCommands {
 
-    public function __construct() {
+    protected $denormalizerManager;
 
+    /**
+     * Creates a new denormalizer drush command.
+     *
+     * @param DenormalizerManagerInterface $denormalizerManager
+     *   The denormalizer manager service
+     */
+    public function __construct(DenormalizerManagerInterface $denormalizerManager) {
+        $this->denormalizerManager = $denormalizerManager;
     }
 
     /**
@@ -19,7 +33,10 @@ class DenormalizerCommands extends DrushCommands {
      * @usage drush denormalizer:denormalize --reset
      *   Resets tables.
      */
-    public function hello($options = ['reset' => false]) {
-        $this->output()->writeln('Resets tables.');
+    public function denormalize($options = ['reset' => false]) {
+
+        print_r($this->denormalizerManager->getContentEntityTypes());
+
+        print_r($this->denormalizerManager->getContentEntityFields('user'));
     }
 }
