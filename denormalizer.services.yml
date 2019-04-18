@@ -1,0 +1,6 @@
+services:
+  denormalizer.commands:
+    class: Drupal\denormalizer\Commands\DenormalizerCommands
+    arguments: []
+    tags:
+      - { name: drush.command }
