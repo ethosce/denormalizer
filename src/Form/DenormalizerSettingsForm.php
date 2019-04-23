@@ -4,13 +4,51 @@ namespace Drupal\denormalizer\Form;
 
 
 use Drupal\Core\Database\Database;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\denormalizer\Plugin\Denormalizer\SchemaDenormalizerManager;
+use Drupal\denormalizer\Service\DenormalizerManagerInterface;
+use Drush\Drush;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Denormalizer Settings Form.
  */
 class DenormalizerSettingsForm extends ConfigFormBase {
+
+    /**
+     * The schema denormalizer plugin manager.
+     *
+     * @var SchemaDenormalizerManager
+     */
+    protected $schemaDenormalizerManager;
+
+    /**
+     * The entity bundle service.
+     *
+     * @var EntityTypeBundleInfoInterface
+     */
+    protected $bundleInfo;
+
+    public function __construct(ConfigFactoryInterface $configFactory, SchemaDenormalizerManager $schemaDenormalizerManager, EntityTypeBundleInfoInterface $bundleInfo)
+    {
+        parent::__construct($configFactory);
+        $this->schemaDenormalizerManager = $schemaDenormalizerManager;
+        $this->bundleInfo = $bundleInfo;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+            $container->get('config.factory'),
+            $container->get('plugin.manager.schema_denormalizer'),
+            $container->get('entity_type.bundle.info')
+        );
+    }
 
   /**
    * {@inheritdoc}
@@ -32,6 +70,40 @@ class DenormalizerSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
 
     $config = $this->config('denormalizer.settings');
+
+      $form['enabled_content_entities'] = [
+          '#type' => 'details',
+          '#open' => FALSE,
+          '#title' => $this->t('Available content entities'),
+          '#description' => $this->t('Enable content entity type to denormalize.'),
+          '#tree' => TRUE,
+      ];
+
+      $contentEntities = $this->schemaDenormalizerManager->getDefinitions();
+
+      $denormalizedContentEntities = $config->get('denormalizered_content_entities');
+
+      foreach ($contentEntities as $pluginId => $contentEntity){
+          $bundles = $this->checkBundles($pluginId);
+          if (empty($bundles)){
+              $id = $pluginId;
+              $form['enabled_content_entities'][$id] = array(
+                  '#type' => 'checkbox',
+                  '#title' => $contentEntity['name'],
+                  '#default_value' => $denormalizedContentEntities[$id],
+              );
+          }
+          else{
+              foreach($bundles as $bundle){
+                  $id = $pluginId.'_'.$bundle;
+                  $form['enabled_content_entities'][$id] = array(
+                      '#type' => 'checkbox',
+                      '#title' => $contentEntity['name'].' '.$bundle,
+                      '#default_value' => $denormalizedContentEntities[$id],
+                  );
+              }
+          }
+      }
 
     $form['denormalizer_sql_mode'] = [
       '#title' => $this->t('SQL mode'),
@@ -95,7 +167,7 @@ class DenormalizerSettingsForm extends ConfigFormBase {
   }
 
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
+    /*parent::validateForm($form, $form_state);
 
     $prefix = Database::getConnection()->tablePrefix();
 
@@ -107,7 +179,7 @@ class DenormalizerSettingsForm extends ConfigFormBase {
 
     if ($form_state['values']['denormalizer_db'] == 'external' && empty($form_state['values']['denormalizer_db_prefix'])) {
       $form_state->setErrorByName('denormalizer_db_prefix', $this->t( 'Database prefix is required if using an external database.'));
-    }
+    }*/
 
   }
 
@@ -115,7 +187,7 @@ class DenormalizerSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->config('denormalizer.settings')
+    /*$this->config('denormalizer.settings')
       // Set the submitted configuration setting
       ->set('denormalizer_sql_mode', $form_state->getValue('denormalizer_sql_mode'))
       ->set('denormalizer_db', $form_state->getValue('denormalizer_db'))
@@ -124,9 +196,23 @@ class DenormalizerSettingsForm extends ConfigFormBase {
       ->set('denormalizer_cron_enabled', $form_state->getValue('denormalizer_cron_enabled'))
       ->set('denormalizer_run_every', $form_state->getValue('denormalizer_run_every'))
       ->set('denormalizer_reload_every', $form_state->getValue('denormalizer_reload_every'))
-      ->save();
+      ->save();*/
 
-    parent::submitForm($form, $form_state);
+      $this->config('denormalizer.settings')
+          ->set('denormalizered_content_entities', $form_state->getValue('enabled_content_entities'))
+          ->save();
+
+    //parent::submitForm($form, $form_state);
+  }
+  private function checkBundles($entityId) {
+      $bundles = $this->bundleInfo->getBundleInfo($entityId);
+
+      if (array_key_exists($entityId, $bundles)) {
+
+          return [];
+      }
+
+      return array_keys($bundles);
   }
 
 }

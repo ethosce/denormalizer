@@ -52,4 +52,26 @@ interface DenormalizerManagerInterface {
      *   The database creation status.
      */
     public function createDatabase(string $key);
+
+    /**
+     * Inserts values into a denormalized table.
+     *
+     * @param $table
+     *   The table to insert values into.
+     * @param array $values
+     *   The values to insert
+     * @return boolean
+     *   The status of the insert query (0 unsuccessful and 1 successful).
+     */
+    public function insert($table, array $values);
+
+    /**
+     * Deletes denormalized table rows.
+     *
+     * @param $table
+     *   The table to delete.
+     * @return boolean
+     *   The status of the delete query (0 unsuccessful and 1 successful).
+     */
+    public function delete($table);
 }

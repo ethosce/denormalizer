@@ -2,6 +2,7 @@
 
 namespace Drupal\denormalizer\Commands;
 
+use Drupal\denormalizer\Plugin\Denormalizer\SchemaDenormalizerManager;
 use Drupal\denormalizer\Service\DenormalizerManagerInterface;
 use Drush\Commands\DrushCommands;
 
@@ -12,7 +13,19 @@ use Drush\Commands\DrushCommands;
  */
 class DenormalizerCommands extends DrushCommands {
 
+    /**
+     * The denormalizer manager service.
+     *
+     * @var DenormalizerManagerInterface
+     */
     protected $denormalizerManager;
+
+    /**
+     * The schema denormalizer plugin manager.
+     *
+     * @var SchemaDenormalizerManager
+     */
+    protected $schemaDenormalizerManager;
 
     /**
      * Creates a new denormalizer drush command.
@@ -20,8 +33,9 @@ class DenormalizerCommands extends DrushCommands {
      * @param DenormalizerManagerInterface $denormalizerManager
      *   The denormalizer manager service
      */
-    public function __construct(DenormalizerManagerInterface $denormalizerManager) {
+    public function __construct(DenormalizerManagerInterface $denormalizerManager, SchemaDenormalizerManager $schemaDenormalizerManager) {
         $this->denormalizerManager = $denormalizerManager;
+        $this->schemaDenormalizerManager = $schemaDenormalizerManager;
     }
 
     /**
@@ -35,10 +49,15 @@ class DenormalizerCommands extends DrushCommands {
      */
     public function denormalize($options = ['reset' => false]) {
         $entityId = 'node';
-        $bundle = 'page';
+        $bundle = 'tags';
 
-        $schema = $this->denormalizerManager->getContentEntityFieldSchema($entityId, $bundle);
+        //$schema = $this->denormalizerManager->getContentEntityFieldSchema($entityId, $bundle);
+        $types = $this->denormalizerManager->getContentEntityTypes();
 
-        $this->denormalizerManager->createDenormalizedTable($entityId.'_'.$bundle.'_denormalize', $schema);
+        $instance = $this->schemaDenormalizerManager->createInstance($entityId);
+        //$instance->schemas();
+        print_r($instance->schemas('page'));
+        //$this->denormalizerManager->createDenormalizedTable($entityId.'_'.$bundle.'_denormalize', $schema, 'denormalizer');
+        //$this->denormalizerManager->createDatabase('denormalizer');
     }
 }

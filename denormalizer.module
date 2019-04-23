@@ -8,7 +8,7 @@ use Drupal\Core\Database\Database;
  * Run or reload periodically.
  */
 function denormalizer_cron() {
-  if (variable_get('denormalizer_cron_enabled')) {
+  /*if (variable_get('denormalizer_cron_enabled')) {
     $last_run = variable_get('denormalizer_last_run', 0);
 
     $reset = NULL;
@@ -35,7 +35,7 @@ function denormalizer_cron() {
       variable_set('denormalizer_last_run', REQUEST_TIME);
       watchdog('denormalizer', 'Ran denormalizer.', array(), WATCHDOG_INFO);
     }
-  }
+  }*/
 }
 
 /**
