@@ -2,7 +2,7 @@
 
 namespace Drupal\denormalizer\Form;
 
-use Drupal\Denormalizer\Denormalizer;
+use Drupal\denormalizer\Denormalizer;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -26,8 +26,9 @@ class DenormalizerCreateForm extends ConfirmFormBase {
     $denormalizer = new Denormalizer();
     $denormalizer->build();
     $denormalizer->execute();
-    variable_set('denormalizer_last_run', REQUEST_TIME);
-    watchdog('denormalizer', 'Ran denormalizer.', array(), WATCHDOG_INFO);
+    $config = \Drupal::service('config.factory')->getEditable('denormalizer.settings');
+    $config->set('denormalizer_last_run', REQUEST_TIME);
+    \Drupal::logger('denormalizer')->info('Ran denormalizer.');
   }
 
   /**

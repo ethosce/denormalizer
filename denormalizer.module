@@ -46,7 +46,7 @@ function denormalizer_cron() {
  * @return type
  */
 function denormalizer_get_info() {
-  $info = module_invoke_all('denormalizer_info');
+  $info = \Drupal::moduleHandler()->invokeAll('denormalizer_info');
   foreach ($info as $target_table => &$entry) {
     if (!isset($entry['bundles'])) {
       $entry['bundles'] = array();
@@ -146,7 +146,8 @@ function denormalizer_source_db() {
  */
 function denormalizer_target_db() {
   $db = db_query('select database()')->fetchField();
-  return variable_get('denormalizer_db_prefix') . $db;
+  $config = \Drupal::config('denormalizer.settings');
+  return $config->get('denormalizer_db_prefix') . $db;
 }
 
 /**
@@ -213,8 +214,9 @@ function denormalizer_create_form_submit_reset($form, $form_state) {
   $denormalizer = new Denormalizer();
   $denormalizer->build();
   $denormalizer->execute(TRUE);
-  variable_set('denormalizer_last_run', REQUEST_TIME);
-  watchdog('denormalizer', 'Ran denormalizer.', array(), WATCHDOG_INFO);
+  $config = \Drupal::service('config.factory')->getEditable('denormalizer.settings');
+  $config->set('denormalizer_last_run', REQUEST_TIME);
+  \Drupal::logger('denormalizer')->info('Ran denormalizer.');
 }
 
 /**

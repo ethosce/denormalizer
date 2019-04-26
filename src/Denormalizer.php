@@ -2,6 +2,8 @@
 
 namespace Drupal\denormalizer;
 
+use Drupal\Core\Database\Database;
+
 class Denormalizer {
 
   // The DN tables to be exported/created.
@@ -181,7 +183,9 @@ class Denormalizer {
    *   Whether or not to drop and recreate tables.
    */
   function execute($reset = FALSE) {
-    $prefix = variable_get('denormalizer_view_prefix', 'snowflake_');
+    $config =  \Drupal::service('config.factory')->getEditable('denormalizer.settings');
+
+    $prefix = $config->get('denormalizer_view_prefix', 'snowflake_');
     $db_prefix = '';
     $db_target = denormalizer_target_db();
 
@@ -202,7 +206,7 @@ class Denormalizer {
       }
     }
 
-    if (variable_get('denormalizer_sql_mode', 'views') == 'views') {
+    if ($config->get('denormalizer_sql_mode', 'views') == 'views') {
       $type = 'VIEW';
     }
     else {
@@ -218,7 +222,7 @@ class Denormalizer {
     db_query("SET sql_mode = 'REAL_AS_FLOAT,PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER'");
 
     // A little more flexibility for handling multiple values.
-    $group_concat_max_len = intval(variable_get('denormalizer_group_concat_max_len', 16384));
+    $group_concat_max_len = intval($config->get('denormalizer_group_concat_max_len', 16384));
     db_query("SET group_concat_max_len = $group_concat_max_len");
 
     foreach ($this->dw_tables as $denormalizer_view => $final_q) {
@@ -229,7 +233,7 @@ class Denormalizer {
       $reset = ($type == 'VIEW') || !db_query('SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = :schema AND TABLE_NAME = :name', array(':schema' => $db_target, ':name' => $denormalizer_view))->fetchField();
 
       if (empty($reset)) {
-        if (!variable_get('denormalizer_max_changed_' . $denormalizer_view)) {
+        if (!$config->get('denormalizer_max_changed_' . $denormalizer_view)) {
           // No reset, but we can't reload.
           $count = db_query("SELECT COUNT(*) FROM $target")->fetchField();
           if ($count > 0) {
@@ -238,14 +242,14 @@ class Denormalizer {
           }
         }
         else {
-          if (isset($dn_info[$denormalizer_view]['changed_key']) && variable_get('denormalizer_max_changed_' . $denormalizer_view)) {
+          if (isset($dn_info[$denormalizer_view]['changed_key']) && $config->get('denormalizer_max_changed_' . $denormalizer_view)) {
             // If there is a last changed key, only replicate records that have changed.
-            $final_q->havingCondition($dn_info[$denormalizer_view]['changed_key'], variable_get('denormalizer_max_changed_' . $denormalizer_view), '>');
+            $final_q->havingCondition($dn_info[$denormalizer_view]['changed_key'], $config->get('denormalizer_max_changed_' . $denormalizer_view), '>');
           }
         }
 
         // Allow altering query before update.
-        drupal_alter('denormalizer', $final_q, $denormalizer_view, $dn_info[$denormalizer_view]);
+        \Drupal::moduleHandler()->alter('denormalizer', $final_q, $denormalizer_view, $dn_info[$denormalizer_view]);
 
         if (!empty($dn_info[$denormalizer_view]['external'])) {
           db_set_active('external');
@@ -271,7 +275,7 @@ class Denormalizer {
           db_set_active('external');
         }
         // Allow altering query before insert.
-        drupal_alter('denormalizer', $final_q, $denormalizer_view, $dn_info[$denormalizer_view]);
+        \Drupal::moduleHandler()->alter('denormalizer', $final_q, $denormalizer_view, $dn_info[$denormalizer_view]);
         $final_sql = denormalizer_dpq($final_q);
         db_set_active();
 
@@ -317,11 +321,11 @@ class Denormalizer {
           }
           $changed = db_query("SELECT max({$dn_info[$denormalizer_view]['changed_key']}) from $target")->fetchField();
           db_set_active();
-          variable_set('denormalizer_max_changed_' . $denormalizer_view, $changed);
+          \Drupal::service('config.factory')->getEditable('denormalizer_max_changed_' . $denormalizer_view, $changed);
         }
       }
 
-      module_invoke_all('denormalizer_post_execute', $denormalizer_view, $dn_info[$denormalizer_view]);
+      \Drupal::moduleHandler()->invokeAll('denormalizer_post_execute', $denormalizer_view, $dn_info[$denormalizer_view]);
     }
     $all_end = microtime(TRUE);
     $all_time = round($all_end - $all_start, 2);
@@ -337,21 +341,21 @@ class Denormalizer {
     $sql = '';
 
 
-    if (variable_get('denormalizer_db') == 'external') {
+    if ($config->get('denormalizer_db') == 'external') {
       $db_target = denormalizer_target_db();
       $db_prefix = "{$db_target}.";
       $sql .= "CREATE DATABASE IF NOT EXISTS $db_target;\n\n";
     }
 
 
-    if (variable_get('denormalizer_sql_mode', 'views') == 'views') {
+    if ($config->get('denormalizer_sql_mode', 'views') == 'views') {
       $type = 'VIEW';
     }
     else {
       $type = 'TABLE';
     }
 
-    $prefix = variable_get('denormalizer_view_prefix', 'snowflake_');
+    $prefix = $config->get('denormalizer_view_prefix', 'snowflake_');
 
 
 
@@ -362,7 +366,7 @@ class Denormalizer {
       }
 
       // Allow altering query before insert.
-      drupal_alter('denormalizer', $final_q, $denormalizer_view, $dn_info[$denormalizer_view]);
+      \Drupal::moduleHandler()->alter('denormalizer', $final_q, $denormalizer_view, $dn_info[$denormalizer_view]);
 
       $final_sql = denormalizer_dpq($final_q);
       $target = "{$db_prefix}{$prefix}{$denormalizer_view}";
