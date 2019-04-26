@@ -16,7 +16,7 @@ class Denormalizer {
    *   Array of SQL select statements.
    */
   function build() {
-    global $databases;
+    $databases = Database::getAllConnectionInfo();
     $other_database = $databases['default']['default'];
     $other_database['prefix'] = '';
     Database::addConnectionInfo('external', 'default', $other_database);
