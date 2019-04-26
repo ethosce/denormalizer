@@ -33,7 +33,7 @@ class DenormalizerCreateForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() : string {
+  public function getFormId(): string {
     return "denormalizer_create_form";
   }
 
@@ -41,7 +41,7 @@ class DenormalizerCreateForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-      //@todo this URL needs to be updated
+    //@todo this URL needs to be updated
     return new Url('denormalizer.create');
   }
 

@@ -79,7 +79,7 @@ class DenormalizerSettingsForm extends ConfigFormBase {
 
     $contentEntities = $this->schemaDenormalizerManager->getDefinitions();
 
-    $denormalizedContentEntities = $config->get('denormalizered_content_entities');
+    $denormalizedContentEntities = $config->get('denormalized_content_entities');
 
     foreach ($contentEntities as $pluginId => $contentEntity) {
       $bundles = $this->checkBundles($pluginId);

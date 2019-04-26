@@ -2,7 +2,6 @@
 
 namespace Drupal\denormalizer\Service;
 
-
 interface DenormalizerInterface {
 
 }

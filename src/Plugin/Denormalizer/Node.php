@@ -12,16 +12,15 @@ namespace Drupal\denormalizer\Plugin\Denormalizer;
  * )
  */
 class Node extends AbstractSchemaDenormalizer {
+  /**
+   * {@inheritdoc}
+   */
+  /* public function schemas(string $bundle = NULL) {
 
-    /**
-     * {@inheritdoc}
-     */
-    /*public function schemas(string $bundle = NULL) {
+    if ($this->hasBundle() && !isset($bundle)){
+    throw new \Exception("Missing bundle name for '".$this->getMachineName()."' content entity.");
+    }
 
-        if ($this->hasBundle() && !isset($bundle)){
-            throw new \Exception("Missing bundle name for '".$this->getMachineName()."' content entity.");
-        }
-
-        return $this->denormalizerManager->getContentEntityFieldSchema($this->getMachineName(), $bundle);
-    }*/
+    return $this->denormalizerManager->getContentEntityFieldSchema($this->getMachineName(), $bundle);
+    } */
 }
