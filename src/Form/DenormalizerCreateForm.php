@@ -42,7 +42,7 @@ class DenormalizerCreateForm extends ConfirmFormBase {
    */
   public function getCancelUrl() {
       //@todo this URL needs to be updated
-    return new Url('example_module.another_path');
+    return new Url('denormalizer.create');
   }
 
   /**
